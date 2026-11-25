@@ -78,7 +78,7 @@ WebToExe creates a desktop wrapper; it does **not** convert a website into an of
 WebToExe treats every public request as untrusted input.
 
 - Only HTTPS website URLs are accepted.
-- Localhost, private-network and IP-literal website addresses are rejected.
+- Localhost names, reserved local hostnames, and IP-literal website addresses are rejected.
 - App names and dimensions are validated before being written into the Tauri configuration.
 - Form values are treated as data; they are never executed as shell commands or source code.
 - The build workflow runs repository-controlled code. A request cannot upload or execute its own workflow or Rust source.

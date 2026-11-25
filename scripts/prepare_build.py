@@ -13,9 +13,12 @@ import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
+import warnings
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+
+Image.MAX_IMAGE_PIXELS = 16_777_216
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "src-tauri" / "tauri.conf.json"
@@ -183,11 +186,15 @@ def download_icon(url: str) -> Image.Image:
         fail("Icon file must be smaller than 2 MB.")
 
     try:
-        image = Image.open(io.BytesIO(data))
-        image.verify()
-        image = Image.open(io.BytesIO(data)).convert("RGBA")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            image = Image.open(io.BytesIO(data))
+            if image.format not in {"PNG", "JPEG", "ICO"}:
+                fail("Use a PNG, JPG, or ICO image for the app icon.")
+            image.verify()
+            image = Image.open(io.BytesIO(data)).convert("RGBA")
     except Exception:
-        fail("Uploaded icon is not a supported image.")
+        fail("Uploaded icon is not a supported image or exceeds safe image limits.")
     if image.width < 32 or image.height < 32 or image.width > 4096 or image.height > 4096:
         fail("Icon dimensions must be between 32x32 and 4096x4096 pixels.")
     return image
