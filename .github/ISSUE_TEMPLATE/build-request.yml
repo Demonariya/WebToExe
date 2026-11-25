@@ -43,14 +43,14 @@ body:
       value: "800"
     validations:
       required: false
-  - type: textarea
+  - type: upload
     id: application_icon
     attributes:
       label: Application icon (optional)
-      description: Drag and drop a PNG, JPG, or ICO file into this field. GitHub will add an attachment link. Leave empty to use a generated default icon.
-      render: text
+      description: Click to browse or drag and drop a PNG, JPG, JPEG, WEBP, or GIF image. Leave empty to use the generated default icon.
     validations:
       required: false
+      accept: ".png,.jpg,.jpeg,.webp,.gif"
   - type: checkboxes
     id: acknowledgement
     attributes:

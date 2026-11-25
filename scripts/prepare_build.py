@@ -180,12 +180,12 @@ def extract_icon_url(value: str) -> str | None:
             parsed.scheme == "https"
             and parsed.hostname in ALLOWED_ICON_HOSTS
             and parsed.hostname == "github.com"
-            and parsed.path.startswith("/user-attachments/assets/")
+            and parsed.path.startswith(("/user-attachments/assets/", "/user-attachments/files/"))
         ):
             return candidate
 
     if value.strip():
-        fail("Icon uploads must use GitHub's issue attachment upload. Remove external image URLs or upload the icon directly to the form.")
+        fail("Upload the icon using the Application icon file field. Supported formats: PNG, JPG, JPEG, WEBP, GIF.")
     return None
 
 
@@ -214,8 +214,8 @@ def download_icon(url: str) -> Image.Image:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
             image = Image.open(io.BytesIO(data))
-            if image.format not in {"PNG", "JPEG", "ICO"}:
-                fail("Use a PNG, JPG, or ICO image for the app icon.")
+            if image.format not in {"PNG", "JPEG", "WEBP", "GIF"}:
+                fail("Use a PNG, JPG, JPEG, WEBP, or GIF image for the app icon.")
             image.verify()
             image = Image.open(io.BytesIO(data)).convert("RGBA")
     except Exception:

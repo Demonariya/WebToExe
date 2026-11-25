@@ -49,7 +49,7 @@ Fill in the form:
 - **Website URL:** The full address, including HTTPS.
 - **Application name:** The name shown in the app window and installer.
 - **Window size:** Optional width and height; sensible defaults are provided.
-- **Application icon:** Optional PNG, JPG, or ICO attachment. Drag the file into the icon field.
+- **Application icon:** Optional PNG, JPG, JPEG, WEBP, or GIF file. Click Browse or drag the image directly into the upload field.
 - **Window and behavior options:** Choose right-click menu, maximize, resize, minimize, title bar, startup mode, always-on-top, page zoom, taskbar visibility, screen-capture protection, HTML5 drag-and-drop, and theme.
 
 After submitting, follow the Actions run linked in the issue. When the build succeeds, the bot posts the download link in that issue.
@@ -132,7 +132,7 @@ Do not submit websites that you do not have permission to package or distribute.
 
 This repository is designed around GitHub Issue Forms and automated Windows builds. To develop the Tauri shell locally, install Rust, the Tauri CLI, and the Windows prerequisites described in the [Tauri documentation](https://v2.tauri.app/start/prerequisites/).
 
-The request preparation script requires Python 3.11+ and Pillow. It creates the application icon, writes the request-specific Tauri window configuration, and generates the Rust build option used to suppress the context menu before compilation.
+The request preparation script requires Python 3.11+ and Pillow. It validates the GitHub-hosted image attachment and creates the application icon, writes the request-specific Tauri window configuration, and generates the Rust build option used to suppress the context menu before compilation.
 
 ## Contributing
 
