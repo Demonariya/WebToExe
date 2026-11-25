@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Build history
+    url: https://github.com/Demonariya/WebToExe/releases
+    about: Browse completed website app builds.
+  - name: Project documentation
+    url: https://github.com/Demonariya/WebToExe#readme
+    about: Read how WebToExe works and what it supports.

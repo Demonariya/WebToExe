@@ -1,0 +1,59 @@
+name: Build a Windows app
+description: Request a dedicated Windows EXE for a website.
+title: "[Build Request] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Create your website app
+        Submit an HTTPS website address and choose the app settings.
+        A Windows EXE and MSI will be built and linked in this issue.
+        Do not enter passwords, authentication codes, or other private information.
+  - type: input
+    id: website_url
+    attributes:
+      label: Website URL
+      description: Enter the full public website address. HTTPS is required.
+      placeholder: https://example.com
+    validations:
+      required: true
+  - type: input
+    id: application_name
+    attributes:
+      label: Application name
+      description: This name appears in the app window and installer.
+      placeholder: Example App
+    validations:
+      required: true
+  - type: input
+    id: window_width
+    attributes:
+      label: Window width
+      description: Optional width in pixels. Allowed range is 600–2560.
+      placeholder: "1280"
+      value: "1280"
+    validations:
+      required: false
+  - type: input
+    id: window_height
+    attributes:
+      label: Window height
+      description: Optional height in pixels. Allowed range is 400–1600.
+      placeholder: "800"
+      value: "800"
+    validations:
+      required: false
+  - type: upload
+    id: application_icon
+    attributes:
+      label: Application icon (optional)
+      description: Upload a square PNG, JPG, or ICO image. A default icon is generated when no file is attached.
+    validations:
+      required: false
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Before submitting
+      options:
+        - label: I understand this app displays the website online and does not bypass its login, subscription, or access restrictions.
+          required: true
