@@ -50,6 +50,7 @@ Fill in the form:
 - **Application name:** The name shown in the app window and installer.
 - **Window size:** Optional width and height; sensible defaults are provided.
 - **Application icon:** Optional PNG, JPG, or ICO attachment. Drag the file into the icon field.
+- **Window and behavior options:** Choose right-click menu, maximize, resize, minimize, title bar, startup mode, always-on-top, keyboard shortcuts, taskbar visibility, screen-capture protection, HTML5 drag-and-drop, and theme.
 
 After submitting, follow the Actions run linked in the issue. When the build succeeds, the bot posts the download link in that issue.
 
@@ -62,6 +63,28 @@ After submitting, follow the Actions run linked in the issue. When the build suc
 - A separate release for each request.
 
 The generated app loads the submitted website in a native WebView powered by Tauri 2.
+
+## App options
+
+Every build request can customize the generated Windows app:
+
+| Option | What it controls |
+|---|---|
+| Right-click context menu | Enable or suppress the website's context menu. |
+| Maximize button | Enable or disable the native maximize control. |
+| Resize window | Allow or prevent resizing the app window. Turning this off also disables maximizing. |
+| Minimize button | Enable or disable the native minimize control. |
+| Native title bar and borders | Show the standard Windows frame or create a borderless window. |
+| Start maximized / fullscreen | Choose the app's initial window state. These modes are mutually exclusive. |
+| Always on top | Keep the app above other windows. |
+| Browser keyboard shortcuts | Enable or disable shortcuts such as F5, Ctrl+R, Ctrl+F, and Ctrl+P on Windows. |
+| Page zoom shortcuts | Enable or disable Ctrl+Plus, Ctrl+Minus, and Ctrl+0. |
+| Show in Windows taskbar | Control whether the app appears in the taskbar. |
+| Prevent screenshots and screen capture | Ask Windows to exclude the window from supported capture APIs. This is not a universal anti-recording guarantee. |
+| Website file drag-and-drop | Preserve HTML5 drag-and-drop support inside the website, such as dropping files onto upload areas. |
+| App and WebView theme | Follow Windows, or start with Light or Dark preference. The website can still override its own colors. |
+
+**Note:** A borderless window has no native title-bar drag area. If you turn off the title bar, the window may be harder to move unless the website itself provides a suitable drag region. Disabling right-click is applied by a WebView document event listener; embedded third-party frames can still implement their own context menus.
 
 ## Important limitations
 
@@ -110,7 +133,7 @@ Do not submit websites that you do not have permission to package or distribute.
 
 This repository is designed around GitHub Issue Forms and automated Windows builds. To develop the Tauri shell locally, install Rust, the Tauri CLI, and the Windows prerequisites described in the [Tauri documentation](https://v2.tauri.app/start/prerequisites/).
 
-The request preparation script requires Python 3.11+ and Pillow. It creates the application icon and writes the request-specific Tauri configuration before compilation.
+The request preparation script requires Python 3.11+ and Pillow. It creates the application icon, writes the request-specific Tauri window configuration, and generates the Rust build option used to suppress the context menu before compilation.
 
 ## Contributing
 

@@ -131,6 +131,31 @@ def parse_dimension(raw: str, default: int, minimum: int, maximum: int, label: s
     return value
 
 
+def parse_toggle(body: str, label: str, default: bool) -> bool:
+    raw = read_field(body, label).strip().casefold()
+    if not raw:
+        return default
+    if raw == "enabled":
+        return True
+    if raw == "disabled":
+        return False
+    fail(f"{label} must be Enabled or Disabled.")
+
+
+def parse_theme(body: str) -> str:
+    raw = read_field(body, "App and WebView theme").strip().casefold()
+    choices = {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark",
+    }
+    if not raw:
+        return "System"
+    if raw not in choices:
+        fail("App and WebView theme must be System, Light, or Dark.")
+    return choices[raw]
+
+
 class SafeIconRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, request, response, code, message, headers, new_url):
         host = urllib.parse.urlsplit(new_url).hostname
@@ -254,6 +279,28 @@ def main() -> None:
     width = parse_dimension(read_field(body, "Window width"), 1280, 600, 2560, "Window width")
     height = parse_dimension(read_field(body, "Window height"), 800, 400, 1600, "Window height")
 
+    disable_context_menu = not parse_toggle(body, "Right-click context menu", True)
+    allow_maximize = parse_toggle(body, "Maximize button", True)
+    allow_resize = parse_toggle(body, "Resize window", True)
+    allow_minimize = parse_toggle(body, "Minimize button", True)
+    show_titlebar = parse_toggle(body, "Native title bar and borders", True)
+    start_maximized = parse_toggle(body, "Start maximized", False)
+    start_fullscreen = parse_toggle(body, "Start in fullscreen", False)
+    always_on_top = parse_toggle(body, "Always on top", False)
+    browser_shortcuts = parse_toggle(body, "Browser keyboard shortcuts", True)
+    zoom_shortcuts = parse_toggle(body, "Page zoom shortcuts", True)
+    show_in_taskbar = parse_toggle(body, "Show in Windows taskbar", True)
+    prevent_screenshots = parse_toggle(body, "Prevent screenshots and screen capture", False)
+    website_drag_drop = parse_toggle(body, "Website file drag-and-drop", True)
+    app_theme = parse_theme(body)
+
+    if start_maximized and start_fullscreen:
+        fail("Start maximized and Start in fullscreen cannot both be enabled.")
+    if start_maximized and (not allow_maximize or not allow_resize):
+        fail("Start maximized requires both Maximize button and Resize window to be enabled.")
+    if not allow_resize:
+        allow_maximize = False
+
     icon_url = extract_icon_url(read_field(body, "Application icon (optional)"))
     image = download_icon(icon_url) if icon_url else make_default_icon()
     write_icons(image)
@@ -283,8 +330,31 @@ def main() -> None:
             "minWidth": min(600, width),
             "minHeight": min(400, height),
             "center": True,
-            "resizable": True,
+            "resizable": allow_resize,
+            "maximizable": allow_maximize,
+            "minimizable": allow_minimize,
+            "decorations": show_titlebar,
+            "maximized": start_maximized,
+            "fullscreen": start_fullscreen,
+            "alwaysOnTop": always_on_top,
+            "browserAcceleratorKeys": browser_shortcuts,
+            "zoomHotkeysEnabled": zoom_shortcuts,
+            "skipTaskbar": not show_in_taskbar,
+            "contentProtected": prevent_screenshots,
+            # Tauri's internal drag/drop handler must be disabled on Windows
+            # so the website can receive native HTML5 drag-and-drop events.
+            "dragDropEnabled": not website_drag_drop,
         }
+    )
+    if app_theme == "System":
+        window.pop("theme", None)
+    else:
+        window["theme"] = app_theme
+
+    options_path = ROOT / "src-tauri" / "src" / "build_options.rs"
+    options_path.write_text(
+        f"pub const DISABLE_CONTEXT_MENU: bool = {str(disable_context_menu).lower()};\n",
+        encoding="utf-8",
     )
 
     config.setdefault("bundle", {})
@@ -308,6 +378,14 @@ def main() -> None:
     print(f"Website: {website_url}")
     print(f"Window: {width}x{height}")
     print(f"Custom icon: {'yes' if icon_url else 'no (generated default)'}")
+    print(
+        "Window options: "
+        f"resizable={allow_resize}, maximizable={allow_maximize}, "
+        f"minimizable={allow_minimize}, titlebar={show_titlebar}, "
+        f"context_menu={'enabled' if not disable_context_menu else 'disabled'}, "
+        f"fullscreen={start_fullscreen}, maximized={start_maximized}, "
+        f"always_on_top={always_on_top}, theme={app_theme}"
+    )
 
 
 if __name__ == "__main__":

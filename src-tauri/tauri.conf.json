@@ -17,7 +17,18 @@
         "minWidth": 600,
         "minHeight": 400,
         "center": true,
-        "resizable": true
+        "resizable": true,
+        "maximizable": true,
+        "minimizable": true,
+        "decorations": true,
+        "maximized": false,
+        "fullscreen": false,
+        "alwaysOnTop": false,
+        "browserAcceleratorKeys": true,
+        "zoomHotkeysEnabled": true,
+        "skipTaskbar": false,
+        "contentProtected": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {

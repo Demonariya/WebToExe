@@ -58,3 +58,158 @@ body:
       options:
         - label: I understand this app displays the website online and does not bypass its login, subscription, or access restrictions.
           required: true
+  - type: dropdown
+    id: context_menu
+    attributes:
+      label: Right-click context menu
+      description: Allow or block the website's right-click menu.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: allow_maximize
+    attributes:
+      label: Maximize button
+      description: Allow the user to maximize the app window.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: allow_resize
+    attributes:
+      label: Resize window
+      description: Allow resizing the app window by dragging its edges.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: allow_minimize
+    attributes:
+      label: Minimize button
+      description: Allow minimizing the app window.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: show_titlebar
+    attributes:
+      label: Native title bar and borders
+      description: Show the standard Windows title bar, border, and window controls.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: start_maximized
+    attributes:
+      label: Start maximized
+      description: Open the app maximized when it launches. Requires resizing and maximizing to be enabled.
+      options:
+        - Disabled
+        - Enabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: start_fullscreen
+    attributes:
+      label: Start in fullscreen
+      description: Open the app in fullscreen mode without the normal window frame.
+      options:
+        - Disabled
+        - Enabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: always_on_top
+    attributes:
+      label: Always on top
+      description: Keep this app above other windows.
+      options:
+        - Disabled
+        - Enabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: browser_shortcuts
+    attributes:
+      label: Browser keyboard shortcuts
+      description: Allow browser shortcuts such as F5, Ctrl+R, Ctrl+F, and Ctrl+P. This is Windows-specific.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: zoom_shortcuts
+    attributes:
+      label: Page zoom shortcuts
+      description: Allow Ctrl+Plus, Ctrl+Minus, and Ctrl+0 to change page zoom.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: show_in_taskbar
+    attributes:
+      label: Show in Windows taskbar
+      description: Show the app icon in the Windows taskbar.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: prevent_screenshots
+    attributes:
+      label: Prevent screenshots and screen capture
+      description: Ask Windows to exclude the app window from supported screen-capture tools. Not a guarantee against every capture method.
+      options:
+        - Disabled
+        - Enabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: website_drag_drop
+    attributes:
+      label: Website file drag-and-drop
+      description: Keep HTML5 drag-and-drop working inside the website, for example dragging files into upload areas.
+      options:
+        - Enabled
+        - Disabled
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: app_theme
+    attributes:
+      label: App and WebView theme
+      description: Choose the initial Windows/WebView theme. The website may still apply its own theme.
+      options:
+        - System
+        - Light
+        - Dark
+      default: 1
+    validations:
+      required: true
