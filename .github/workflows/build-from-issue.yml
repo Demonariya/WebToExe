@@ -1,0 +1,100 @@
+name: Build website EXE
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: website-build-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'issues' && contains(github.event.issue.body, '### Website URL')
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out trusted repository code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install icon processing dependency
+        run: python -m pip install --upgrade Pillow
+        shell: pwsh
+
+      - name: Validate request and configure the app
+        id: prepare
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: python scripts/prepare_build.py
+        shell: pwsh
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            src-tauri -> src-tauri/target
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2" --locked
+        shell: pwsh
+
+      - name: Build Windows installers
+        working-directory: src-tauri
+        run: cargo tauri build --bundles nsis,msi
+        shell: pwsh
+
+      - name: Publish dedicated release
+        id: release
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: webtoexe-${{ github.event.issue.number }}-${{ github.run_number }}
+          name: "${{ steps.prepare.outputs.app_name }} — Windows build"
+          body: |
+            ## ${{ steps.prepare.outputs.app_name }}
+
+            Website: ${{ steps.prepare.outputs.website_url }}
+
+            This release was generated automatically from build request #${{ github.event.issue.number }}.
+
+            - Windows x64 EXE installer (NSIS)
+            - Windows x64 MSI installer
+          files: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
+
+      - name: Post download links to the request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
+          APP_NAME: ${{ steps.prepare.outputs.app_name }}
+        shell: pwsh
+        run: |
+          $message = @"
+          ## Build complete
+
+          **$env:APP_NAME** is ready.
+
+          [Download the Windows installers]($env:RELEASE_URL)
+
+          The release contains the EXE and MSI installers. This app loads the website online and does not include its content offline.
+          "@
+          gh issue comment $env:ISSUE_NUMBER --body $message
