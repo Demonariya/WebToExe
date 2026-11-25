@@ -24,10 +24,17 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "src-tauri" / "tauri.conf.json"
 ICON_DIR = ROOT / "src-tauri" / "icons"
 MAX_ICON_BYTES = 2 * 1024 * 1024
+# Exact hosts used by GitHub's attachment redirect chain. GitHub's
+# /user-attachments/assets endpoint redirects to its signed S3 asset bucket;
+# /user-attachments/files can redirect to objects.githubusercontent.com.
 ALLOWED_ICON_HOSTS = {
     "github.com",
     "user-images.githubusercontent.com",
+    "secured-user-images.githubusercontent.com",
     "private-user-images.githubusercontent.com",
+    "objects.githubusercontent.com",
+    "github-production-user-asset-6210df.s3.amazonaws.com",
+    "github-production-repository-file-5c1aeb.s3.amazonaws.com",
 }
 
 
@@ -156,12 +163,29 @@ def parse_theme(body: str) -> str:
     return choices[raw]
 
 
+def is_allowed_icon_url(url: str) -> bool:
+    """Allow only HTTPS URLs on GitHub's exact attachment/CDN hosts."""
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        host = (parsed.hostname or "").lower().rstrip(".")
+        port = parsed.port
+    except ValueError:
+        return False
+
+    return (
+        parsed.scheme.lower() == "https"
+        and host in ALLOWED_ICON_HOSTS
+        and port in (None, 443)
+        and not parsed.username
+        and not parsed.password
+    )
+
+
 class SafeIconRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, request, response, code, message, headers, new_url):
-        host = urllib.parse.urlsplit(new_url).hostname
-        if host not in ALLOWED_ICON_HOSTS:
+        if not is_allowed_icon_url(new_url):
             raise urllib.error.HTTPError(
-                new_url, code, "Icon redirect host is not allowed", headers, None
+                new_url, code, "Icon redirect URL is not allowed", headers, None
             )
         return super().redirect_request(
             request, response, code, message, headers, new_url
@@ -197,9 +221,8 @@ def download_icon(url: str) -> Image.Image:
     opener = urllib.request.build_opener(SafeIconRedirect())
     try:
         with opener.open(request, timeout=20) as response:
-            final_host = urllib.parse.urlsplit(response.geturl()).hostname
-            if final_host not in ALLOWED_ICON_HOSTS:
-                fail("Icon download redirected to an untrusted host.")
+            if not is_allowed_icon_url(response.geturl()):
+                fail("Icon download redirected to an untrusted URL.")
             content_type = response.headers.get_content_type()
             if not content_type.startswith("image/"):
                 fail("The uploaded icon is not an image.")
