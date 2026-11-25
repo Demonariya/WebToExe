@@ -43,11 +43,12 @@ body:
       value: "800"
     validations:
       required: false
-  - type: upload
+  - type: textarea
     id: application_icon
     attributes:
       label: Application icon (optional)
-      description: Upload a square PNG, JPG, or ICO image. A default icon is generated when no file is attached.
+      description: Drag and drop a PNG, JPG, or ICO file into this field. GitHub will add an attachment link. Leave empty to use a generated default icon.
+      render: text
     validations:
       required: false
   - type: checkboxes

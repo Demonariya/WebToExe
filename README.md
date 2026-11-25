@@ -49,7 +49,7 @@ Fill in the form:
 - **Website URL:** The full address, including HTTPS.
 - **Application name:** The name shown in the app window and installer.
 - **Window size:** Optional width and height; sensible defaults are provided.
-- **Application icon:** Optional PNG, JPG, or ICO upload.
+- **Application icon:** Optional PNG, JPG, or ICO attachment. Drag the file into the icon field.
 
 After submitting, follow the Actions run linked in the issue. When the build succeeds, the bot posts the download link in that issue.
 
