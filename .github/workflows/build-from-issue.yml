@@ -39,6 +39,16 @@ jobs:
         run: python scripts/prepare_build.py
         shell: pwsh
 
+      - name: Post build started status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: pwsh
+        run: |
+          $message = "Build started. Track progress in the [GitHub Actions run]($env:RUN_URL)."
+          gh issue comment $env:ISSUE_NUMBER --body $message
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -97,4 +107,15 @@ jobs:
 
           The release contains the EXE and MSI installers. This app loads the website online and does not include its content offline.
           "@
+          gh issue comment $env:ISSUE_NUMBER --body $message
+
+      - name: Report build failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: pwsh
+        run: |
+          $message = "The build failed. See the [workflow logs]($env:RUN_URL) for details."
           gh issue comment $env:ISSUE_NUMBER --body $message
