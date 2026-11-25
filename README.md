@@ -50,7 +50,7 @@ Fill in the form:
 - **Application name:** The name shown in the app window and installer.
 - **Window size:** Optional width and height; sensible defaults are provided.
 - **Application icon:** Optional PNG, JPG, or ICO attachment. Drag the file into the icon field.
-- **Window and behavior options:** Choose right-click menu, maximize, resize, minimize, title bar, startup mode, always-on-top, keyboard shortcuts, taskbar visibility, screen-capture protection, HTML5 drag-and-drop, and theme.
+- **Window and behavior options:** Choose right-click menu, maximize, resize, minimize, title bar, startup mode, always-on-top, page zoom, taskbar visibility, screen-capture protection, HTML5 drag-and-drop, and theme.
 
 After submitting, follow the Actions run linked in the issue. When the build succeeds, the bot posts the download link in that issue.
 
@@ -77,7 +77,6 @@ Every build request can customize the generated Windows app:
 | Native title bar and borders | Show the standard Windows frame or create a borderless window. |
 | Start maximized / fullscreen | Choose the app's initial window state. These modes are mutually exclusive. |
 | Always on top | Keep the app above other windows. |
-| Browser keyboard shortcuts | Enable or disable shortcuts such as F5, Ctrl+R, Ctrl+F, and Ctrl+P on Windows. |
 | Page zoom shortcuts | Enable or disable Ctrl+Plus, Ctrl+Minus, and Ctrl+0. |
 | Show in Windows taskbar | Control whether the app appears in the taskbar. |
 | Prevent screenshots and screen capture | Ask Windows to exclude the window from supported capture APIs. This is not a universal anti-recording guarantee. |

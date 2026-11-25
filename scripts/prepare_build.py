@@ -287,7 +287,6 @@ def main() -> None:
     start_maximized = parse_toggle(body, "Start maximized", False)
     start_fullscreen = parse_toggle(body, "Start in fullscreen", False)
     always_on_top = parse_toggle(body, "Always on top", False)
-    browser_shortcuts = parse_toggle(body, "Browser keyboard shortcuts", True)
     zoom_shortcuts = parse_toggle(body, "Page zoom shortcuts", True)
     show_in_taskbar = parse_toggle(body, "Show in Windows taskbar", True)
     prevent_screenshots = parse_toggle(body, "Prevent screenshots and screen capture", False)
@@ -337,7 +336,6 @@ def main() -> None:
             "maximized": start_maximized,
             "fullscreen": start_fullscreen,
             "alwaysOnTop": always_on_top,
-            "browserAcceleratorKeys": browser_shortcuts,
             "zoomHotkeysEnabled": zoom_shortcuts,
             "skipTaskbar": not show_in_taskbar,
             "contentProtected": prevent_screenshots,

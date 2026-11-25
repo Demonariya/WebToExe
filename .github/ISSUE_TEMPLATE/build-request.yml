@@ -147,17 +147,6 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: browser_shortcuts
-    attributes:
-      label: Browser keyboard shortcuts
-      description: Allow browser shortcuts such as F5, Ctrl+R, Ctrl+F, and Ctrl+P. This is Windows-specific.
-      options:
-        - Enabled
-        - Disabled
-      default: 1
-    validations:
-      required: true
-  - type: dropdown
     id: zoom_shortcuts
     attributes:
       label: Page zoom shortcuts

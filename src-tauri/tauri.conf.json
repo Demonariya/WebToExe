@@ -24,7 +24,6 @@
         "maximized": false,
         "fullscreen": false,
         "alwaysOnTop": false,
-        "browserAcceleratorKeys": true,
         "zoomHotkeysEnabled": true,
         "skipTaskbar": false,
         "contentProtected": false,
