@@ -17,11 +17,10 @@ fn main() {
                 }
             }
 
-            if build_options::CUSTOM_TITLEBAR_ENABLED {
-                let script = titlebar::build_script();
-                if let Err(error) = webview.eval(&script) {
-                    eprintln!("Failed to inject the custom title bar: {error}");
-                }
+            // Every generated app is borderless and always gets the WebToExe title bar.
+            let script = titlebar::build_script();
+            if let Err(error) = webview.eval(&script) {
+                eprintln!("Failed to inject the custom title bar: {error}");
             }
         })
         .run(tauri::generate_context!())
