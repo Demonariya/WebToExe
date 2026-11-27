@@ -409,10 +409,9 @@ def main() -> None:
             "description": "Window-control permissions for the requested website's custom title bar.",
             "windows": ["main"],
             "remote": {
-                "urls": [
-                    f"https://{website_host}",
-                    f"https://*.{website_host}",
-                ]
+                # The wrapper accepts cross-domain sign-in and payment flows.
+                # The capability below grants window controls only, never shell or file access.
+                "urls": ["https://*"]
             },
             "permissions": [
                 "core:window:default",
@@ -455,7 +454,7 @@ def main() -> None:
     print(f"Custom icon: {'yes' if icon_url else 'no (generated default)'}")
     print(f"Custom title bar: {'enabled' if custom_titlebar else 'disabled (native title bar)'}")
     if custom_titlebar:
-        print(f"Custom title bar permissions restricted to: {website_host} and its subdomains")
+        print("Custom title bar: window-control permissions only on HTTPS pages")
     print(
         "Window options: "
         f"resizable={allow_resize}, maximizable={allow_maximize}, "
