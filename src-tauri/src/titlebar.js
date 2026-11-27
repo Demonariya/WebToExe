@@ -67,9 +67,73 @@
   maximizeButton.hidden = !SHOW_MAXIMIZE;
   document.body.appendChild(bar);
 
+  const documentRoot = document.documentElement;
   const originalPaddingTop = Number.parseFloat(getComputedStyle(document.body).paddingTop) || 0;
+
+  // Reserve title-bar space inside the existing viewport instead of adding
+  // 36px to the document's scroll height. This prevents a fake scrollbar on
+  // pages whose content otherwise fits exactly in the window.
+  document.body.style.setProperty("box-sizing", "border-box", "important");
+  document.body.style.setProperty("min-height", "100vh", "important");
   document.body.style.setProperty("padding-top", (originalPaddingTop + BAR_HEIGHT) + "px", "important");
-  document.documentElement.style.setProperty("scroll-padding-top", BAR_HEIGHT + "px");
+
+  // Some websites explicitly force overflow-y: scroll, which displays a
+  // scrollbar even when the page has no overflow. Let the browser decide.
+  for (const root of [documentRoot, document.body]) {
+    root.style.setProperty("overflow-y", "auto", "important");
+    root.style.setProperty("overflow-x", "auto", "important");
+  }
+  documentRoot.style.setProperty("scroll-padding-top", BAR_HEIGHT + "px");
+
+  // SPA shells commonly use height:100vh or min-height:100vh on their root.
+  // Once the title bar reserves 36px, reduce only those viewport-sized roots
+  // to the remaining viewport so maximized layouts do not overflow by 36px.
+  const fittedRoots = new Set();
+  function fitViewportRoots() {
+    const viewportHeight = window.innerHeight;
+    if (!viewportHeight) return;
+
+    const candidates = document.querySelectorAll("#root,#app,#__next,[data-app-root]");
+    for (const element of candidates) {
+      if (element === bar || !element.isConnected) continue;
+      const computed = getComputedStyle(element);
+      const currentHeight = Number.parseFloat(computed.height);
+      const currentMinHeight = Number.parseFloat(computed.minHeight);
+      let changed = false;
+
+      if (!element.dataset.w2eViewportHeight && Number.isFinite(currentHeight)
+          && Math.abs(currentHeight - viewportHeight) <= 2) {
+        element.dataset.w2eViewportHeight = "true";
+        element.style.setProperty("height", "calc(100vh - " + BAR_HEIGHT + "px)", "important");
+        changed = true;
+      }
+
+      if (!element.dataset.w2eViewportMinHeight && Number.isFinite(currentMinHeight)
+          && Math.abs(currentMinHeight - viewportHeight) <= 2) {
+        element.dataset.w2eViewportMinHeight = "true";
+        element.style.setProperty("min-height", "calc(100vh - " + BAR_HEIGHT + "px)", "important");
+        changed = true;
+      }
+
+      if (element.dataset.w2eViewportHeight || element.dataset.w2eViewportMinHeight) {
+        element.style.setProperty("box-sizing", "border-box", "important");
+        fittedRoots.add(element);
+      } else if (changed) {
+        fittedRoots.add(element);
+      }
+    }
+  }
+
+  let fitFrame = 0;
+  function scheduleViewportFit() {
+    if (fitFrame) cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(() => {
+      fitFrame = 0;
+      fitViewportRoots();
+    });
+  }
+  fitViewportRoots();
+  requestAnimationFrame(fitViewportRoots);
 
   const fixedHeader = Array.from(document.querySelectorAll("header,[role='banner'],nav")).find((element) => {
     const computed = getComputedStyle(element);
@@ -195,7 +259,9 @@
   const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
   colorScheme.addEventListener?.("change", scheduleThemeUpdate);
   window.addEventListener("resize", scheduleThemeUpdate, { passive: true });
+  window.addEventListener("resize", scheduleViewportFit, { passive: true });
   window.addEventListener("pageshow", scheduleThemeUpdate);
+  window.addEventListener("pageshow", scheduleViewportFit);
   const themeTimer = window.setInterval(scheduleThemeUpdate, 2500);
 
   async function updateMaximizeState() {
@@ -242,5 +308,8 @@
     themeObserver.disconnect();
     window.clearInterval(themeTimer);
     colorScheme.removeEventListener?.("change", scheduleThemeUpdate);
+    window.removeEventListener("resize", scheduleViewportFit);
+    window.removeEventListener("pageshow", scheduleViewportFit);
+    if (fitFrame) cancelAnimationFrame(fitFrame);
   }, { once: true });
 })();
