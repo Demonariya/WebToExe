@@ -24,7 +24,7 @@
     "#"+BAR_ID+"{position:fixed!important;inset:0 0 auto 0!important;z-index:2147483647!important;height:40px!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:0 0 0 12px!important;margin:0!important;box-sizing:border-box!important;color:var(--w2e-fg,#f4f4f5)!important;background:var(--w2e-surface,rgba(28,30,36,.96))!important;border:0!important;border-bottom:1px solid var(--w2e-border,rgba(255,255,255,.1))!important;box-shadow:0 1px 0 rgba(0,0,0,.025)!important;backdrop-filter:blur(18px) saturate(145%)!important;-webkit-backdrop-filter:blur(18px) saturate(145%)!important;font:500 12.5px/1 'Segoe UI',system-ui,sans-serif!important;letter-spacing:0!important;user-select:none!important;-webkit-user-select:none!important;-webkit-app-region:drag!important;overflow:hidden!important}",
     "#"+BAR_ID+" *{box-sizing:border-box!important}",
     "#"+BAR_ID+" .w2e-brand{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important;height:100%!important;flex:1 1 auto!important;padding-right:12px!important;overflow:hidden!important;pointer-events:none!important}",
-    "#"+BAR_ID+" .w2e-icon{width:19px!important;height:19px!important;flex:0 0 19px!important;display:block!important;object-fit:contain!important;border-radius:4px!important}",
+    "#"+BAR_ID+" .w2e-icon{width:22px!important;height:22px!important;flex:0 0 22px!important;display:block!important;object-fit:contain!important;border-radius:5px!important;background:var(--w2e-icon-surface,transparent)!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.12))!important}",
     "#"+BAR_ID+" .w2e-name{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:inherit!important;font:inherit!important;font-weight:600!important;opacity:.96!important}",
     "#"+BAR_ID+" .w2e-controls{display:flex!important;align-items:stretch!important;align-self:stretch!important;flex:0 0 auto!important;height:100%!important;-webkit-app-region:no-drag!important}",
     "#"+BAR_ID+" button{appearance:none!important;-webkit-appearance:none!important;width:46px!important;min-width:46px!important;height:100%!important;min-height:0!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:none!important;box-shadow:none!important;background:transparent!important;color:inherit!important;cursor:default!important;-webkit-app-region:no-drag!important;transition:background-color 120ms ease,color 120ms ease!important}",
@@ -42,7 +42,16 @@
   bar.setAttribute("role", "toolbar");
   bar.setAttribute("aria-label", appName + " window controls");
   bar.innerHTML = '<div class="w2e-brand" data-tauri-drag-region><img class="w2e-icon" alt="" draggable="false"><span class="w2e-name"></span></div><div class="w2e-controls"><button id="w2e-minimize" type="button" aria-label="Minimize" title="Minimize">'+minimizeIcon+'</button><button id="w2e-maximize" type="button" aria-label="Maximize" title="Maximize">'+maximizeIcon+'</button><button id="w2e-close" type="button" aria-label="Close" title="Close">'+closeIcon+'</button></div>';
-  bar.querySelector(".w2e-icon").src = iconUrl;
+  const appIcon = bar.querySelector(".w2e-icon");
+  appIcon.src = iconUrl;
+  appIcon.addEventListener("error", () => {
+    appIcon.style.display = "none";
+    const fallback = document.createElement("span");
+    fallback.textContent = Array.from(appName.trim())[0]?.toUpperCase() || "A";
+    fallback.setAttribute("aria-hidden", "true");
+    fallback.style.cssText = "width:22px;height:22px;flex:0 0 22px;display:grid;place-items:center;border-radius:5px;background:var(--w2e-hover);color:inherit;font:600 12px/1 'Segoe UI',sans-serif";
+    appIcon.parentElement.insertBefore(fallback, appIcon.nextSibling);
+  }, { once: true });
   bar.querySelector(".w2e-name").textContent = appName;
   const minimizeButton = bar.querySelector("#w2e-minimize");
   const maximizeButton = bar.querySelector("#w2e-maximize");
@@ -116,6 +125,7 @@
       accent = firstLink ? parseColor(getComputedStyle(firstLink).color) : null;
     }
     accent = accent || [100,149,237];
+    bar.style.setProperty("--w2e-icon-surface",withAlpha(foreground,0.07));
     bar.style.setProperty("--w2e-surface",withAlpha(surface,0.96));
     bar.style.setProperty("--w2e-fg",toRgb(foreground));
     bar.style.setProperty("--w2e-border",withAlpha(foreground,0.13));
