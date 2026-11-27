@@ -71,10 +71,10 @@ Every build request can customize the generated Windows app:
 | Option | What it controls |
 |---|---|
 | Right-click context menu | Enable or suppress the website's context menu. |
-| Maximize button | Enable or disable the native maximize control. |
+| Maximize button | Enable or disable the maximize/restore control in the native or custom title bar. |
 | Resize window | Allow or prevent resizing the app window. Turning this off also disables maximizing. |
-| Minimize button | Enable or disable the native minimize control. |
-| Native title bar and borders | Show the standard Windows frame or create a borderless window. |
+| Minimize button | Enable or disable the minimize control in the native or custom title bar. |
+| Native title bar and borders | Keep the standard Windows frame, or replace it with a custom title bar showing the app icon, app name, and window controls. |
 | Start maximized / fullscreen | Choose the app's initial window state. These modes are mutually exclusive. |
 | Always on top | Keep the app above other windows. |
 | Page zoom shortcuts | Enable or disable Ctrl+Plus, Ctrl+Minus, and Ctrl+0. |
@@ -83,7 +83,9 @@ Every build request can customize the generated Windows app:
 | Website file drag-and-drop | Preserve HTML5 drag-and-drop support inside the website, such as dropping files onto upload areas. |
 | App and WebView theme | Follow Windows, or start with Light or Dark preference. The website can still override its own colors. |
 
-**Note:** A borderless window has no native title-bar drag area. If you turn off the title bar, the window may be harder to move unless the website itself provides a suitable drag region. Disabling right-click is applied by a WebView document event listener; embedded third-party frames can still implement their own context menus.
+**Custom title bar:** When the native frame is disabled, WebToExe adds a 40px title bar with the uploaded app icon, app name, minimize, maximize/restore, and close controls. The empty area can drag the window, and double-clicking it toggles maximize/restore. Its surface and text colors are sampled from the website's theme-color metadata, header, and page colors, then refreshed as the site's theme changes. The title bar remains available while the app navigates between HTTPS pages.
+
+The remote website receives only the Tauri window permissions required by these controls (close, minimize, maximize/restore, and dragging). No filesystem, shell, process, or arbitrary native-command permission is granted. Disabling right-click is applied by a WebView document event listener; embedded third-party frames can still implement their own context menus.
 
 ## Important limitations
 
