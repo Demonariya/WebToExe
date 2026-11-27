@@ -170,7 +170,7 @@
   });
   if (SHOW_MAXIMIZE) {
     updateMaximizeState();
-    appWindow.onResized(updateMaximizeState).catch(()=>{});
+    window.addEventListener("resize",updateMaximizeState,{passive:true});
   }
   window.addEventListener("pagehide",() => {
     themeObserver.disconnect();
