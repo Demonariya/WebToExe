@@ -118,11 +118,15 @@
     const headerStyle = header ? getComputedStyle(header) : null;
     const themeMeta = document.querySelector('meta[name="theme-color"]')?.content || "";
 
-    // Prefer the actual document canvas. A header or navigation surface can be
-    // intentionally different from the page background (as on Instagram).
+    // Prefer the document canvas and app root. Navigation can have a different
+    // surface from the page itself (as on Instagram), so it is only a fallback.
+    const appSurfaceCandidates = Array.from(
+      document.querySelectorAll("main,[role='main'],#app,#root,[data-app-root]")
+    ).slice(0, 8).map((element) => parseColor(getComputedStyle(element).backgroundColor));
     const surface = [
       parseColor(bodyStyle.backgroundColor),
       parseColor(rootStyle.backgroundColor),
+      ...appSurfaceCandidates,
       parseColor(themeMeta),
       headerStyle && parseColor(headerStyle.backgroundColor)
     ].find(Boolean) || [18, 20, 24];
