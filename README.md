@@ -50,7 +50,7 @@ Fill in the form:
 - **Application name:** The name shown in the app window and installer.
 - **Window size:** Optional width and height; sensible defaults are provided.
 - **Application icon:** Optional PNG, JPG, JPEG, WEBP, or GIF file. Click Browse or drag the image directly into the upload field.
-- **Window and behavior options:** Choose right-click menu, maximize, resize, minimize, title bar, startup mode, always-on-top, page zoom, taskbar visibility, screen-capture protection, HTML5 drag-and-drop, and theme.
+- **Window and behavior options:** Choose right-click menu, maximize, resize, minimize, startup mode, always-on-top, page zoom, taskbar visibility, screen-capture protection, HTML5 drag-and-drop, and theme. The custom title bar is always enabled.
 
 After submitting, follow the Actions run linked in the issue. When the build succeeds, the bot posts the download link in that issue.
 
@@ -74,7 +74,7 @@ Every build request can customize the generated Windows app:
 | Maximize button | Enable or disable the maximize/restore control in the native or custom title bar. |
 | Resize window | Allow or prevent resizing the app window. Turning this off also disables maximizing. |
 | Minimize button | Enable or disable the minimize control in the native or custom title bar. |
-| Native title bar and borders | Keep the standard Windows frame, or replace it with a custom title bar showing the app icon, app name, and window controls. |
+| Custom title bar | Always enabled. Replaces the native Windows frame with the uploaded app icon, app name, and minimize, maximize/restore, and close controls. |
 | Start maximized / fullscreen | Choose the app's initial window state. These modes are mutually exclusive. |
 | Always on top | Keep the app above other windows. |
 | Page zoom shortcuts | Enable or disable Ctrl+Plus, Ctrl+Minus, and Ctrl+0. |
@@ -83,7 +83,7 @@ Every build request can customize the generated Windows app:
 | Website file drag-and-drop | Preserve HTML5 drag-and-drop support inside the website, such as dropping files onto upload areas. |
 | App and WebView theme | Follow Windows, or start with Light or Dark preference. The website can still override its own colors. |
 
-**Custom title bar:** When the native frame is disabled, WebToExe adds a 40px title bar with the uploaded app icon, app name, minimize, maximize/restore, and close controls. The empty area can drag the window, and double-clicking it toggles maximize/restore. Its surface and text colors are sampled from the website's theme-color metadata, header, and page colors, then refreshed as the site's theme changes. The title bar remains available while the app navigates between HTTPS pages.
+**Custom title bar:** Every generated app uses a 40px custom title bar; there is no native-title-bar toggle. It displays the uploaded app icon and app name, with minimize, maximize/restore, and close controls. The empty area drags the window, and double-clicking it toggles maximize/restore. Its surface and text colors are sampled from the website's theme-color metadata, header, and page colors, then refreshed as the site's theme changes. The title bar remains available while the app navigates between HTTPS pages. The small title-bar icon preserves the uploaded image's transparency and aspect ratio.
 
 The remote website receives only the Tauri window permissions required by these controls (close, minimize, maximize/restore, and dragging). No filesystem, shell, process, or arbitrary native-command permission is granted. Disabling right-click is applied by a WebView document event listener; embedded third-party frames can still implement their own context menus.
 
