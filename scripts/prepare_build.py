@@ -288,9 +288,16 @@ def write_icons(image: Image.Image) -> None:
     y = (512 - image.height) // 2
     canvas.alpha_composite(image, (x, y))
     canvas.save(ICON_DIR / "icon.png", format="PNG")
-    canvas.resize((64, 64), Image.Resampling.LANCZOS).save(
-        ICON_DIR / "titlebar.png", format="PNG"
+
+    # Keep the title-bar image transparent and preserve its original aspect ratio.
+    titlebar_image = image.copy()
+    titlebar_image.thumbnail((52, 52), Image.Resampling.LANCZOS)
+    titlebar_canvas = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    titlebar_canvas.alpha_composite(
+        titlebar_image,
+        ((64 - titlebar_image.width) // 2, (64 - titlebar_image.height) // 2),
     )
+    titlebar_canvas.save(ICON_DIR / "titlebar.png", format="PNG")
     canvas.save(
         ICON_DIR / "icon.ico",
         format="ICO",
@@ -312,7 +319,6 @@ def main() -> None:
     allow_maximize = parse_toggle(body, "Maximize button", True)
     allow_resize = parse_toggle(body, "Resize window", True)
     allow_minimize = parse_toggle(body, "Minimize button", True)
-    show_titlebar = parse_toggle(body, "Native title bar and borders", True)
     start_maximized = parse_toggle(body, "Start maximized", False)
     start_fullscreen = parse_toggle(body, "Start in fullscreen", False)
     always_on_top = parse_toggle(body, "Always on top", False)
@@ -321,7 +327,7 @@ def main() -> None:
     prevent_screenshots = parse_toggle(body, "Prevent screenshots and screen capture", False)
     website_drag_drop = parse_toggle(body, "Website file drag-and-drop", True)
     app_theme = parse_theme(body)
-    custom_titlebar = not show_titlebar
+    custom_titlebar = True
 
     if start_maximized and start_fullscreen:
         fail("Start maximized and Start in fullscreen cannot both be enabled.")
@@ -362,7 +368,7 @@ def main() -> None:
             "resizable": allow_resize,
             "maximizable": allow_maximize,
             "minimizable": allow_minimize,
-            "decorations": show_titlebar,
+            "decorations": False,
             "maximized": start_maximized,
             "fullscreen": start_fullscreen,
             "alwaysOnTop": always_on_top,
@@ -380,7 +386,7 @@ def main() -> None:
         window["theme"] = app_theme
 
     # Expose only window-control APIs for the requested website origin.
-    config["app"]["withGlobalTauri"] = custom_titlebar
+    config["app"]["withGlobalTauri"] = True
 
     app_name_base64 = base64.b64encode(app_name.encode("utf-8")).decode("ascii")
     icon_base64 = base64.b64encode((ICON_DIR / "titlebar.png").read_bytes()).decode("ascii")
@@ -390,7 +396,6 @@ def main() -> None:
             [
                 "// Generated per build by scripts/prepare_build.py.",
                 f"pub const DISABLE_CONTEXT_MENU: bool = {str(disable_context_menu).lower()};",
-                f"pub const CUSTOM_TITLEBAR_ENABLED: bool = {str(custom_titlebar).lower()};",
                 f"pub const SHOW_MINIMIZE_BUTTON: bool = {str(allow_minimize).lower()};",
                 f"pub const SHOW_MAXIMIZE_BUTTON: bool = {str(allow_maximize).lower()};",
                 f'pub const APP_NAME_BASE64: &str = "{app_name_base64}";',
@@ -401,34 +406,31 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    if custom_titlebar:
-        CAPABILITY_DIR.mkdir(parents=True, exist_ok=True)
-        capability = {
-            "$schema": "../gen/schemas/remote-schema.json",
-            "identifier": "main-capability",
-            "description": "Window-control permissions for the requested website's custom title bar.",
-            "windows": ["main"],
-            "remote": {
-                # The wrapper accepts cross-domain sign-in and payment flows.
-                # The capability below grants window controls only, never shell or file access.
-                "urls": ["https://*"]
-            },
-            "permissions": [
-                "core:window:default",
-                "core:window:allow-close",
-                "core:window:allow-start-dragging",
-            ],
-        }
-        if allow_minimize:
-            capability["permissions"].append("core:window:allow-minimize")
-        if allow_maximize:
-            capability["permissions"].append("core:window:allow-toggle-maximize")
-        CAPABILITY_PATH.write_text(
-            json.dumps(capability, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-    else:
-        CAPABILITY_PATH.unlink(missing_ok=True)
+    CAPABILITY_DIR.mkdir(parents=True, exist_ok=True)
+    capability = {
+        "$schema": "../gen/schemas/remote-schema.json",
+        "identifier": "main-capability",
+        "description": "Restricted window-control permissions for the WebToExe custom title bar.",
+        "windows": ["main"],
+        "remote": {
+            # WebToExe wraps arbitrary HTTPS sites, including external sign-in
+            # providers. Only window-management commands are granted below.
+            "urls": ["https://*"]
+        },
+        "permissions": [
+            "core:window:default",
+            "core:window:allow-close",
+            "core:window:allow-start-dragging",
+        ],
+    }
+    if allow_minimize:
+        capability["permissions"].append("core:window:allow-minimize")
+    if allow_maximize:
+        capability["permissions"].append("core:window:allow-toggle-maximize")
+    CAPABILITY_PATH.write_text(
+        json.dumps(capability, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
     config.setdefault("bundle", {})
@@ -452,13 +454,11 @@ def main() -> None:
     print(f"Website: {website_url}")
     print(f"Window: {width}x{height}")
     print(f"Custom icon: {'yes' if icon_url else 'no (generated default)'}")
-    print(f"Custom title bar: {'enabled' if custom_titlebar else 'disabled (native title bar)'}")
-    if custom_titlebar:
-        print("Custom title bar: window-control permissions only on HTTPS pages")
+    print("Custom title bar: always enabled (native window frame disabled)")
     print(
         "Window options: "
         f"resizable={allow_resize}, maximizable={allow_maximize}, "
-        f"minimizable={allow_minimize}, titlebar={show_titlebar}, "
+        f"minimizable={allow_minimize}, custom_titlebar=enabled, "
         f"context_menu={'enabled' if not disable_context_menu else 'disabled'}, "
         f"fullscreen={start_fullscreen}, maximized={start_maximized}, "
         f"always_on_top={always_on_top}, theme={app_theme}"
