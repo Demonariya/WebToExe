@@ -404,7 +404,7 @@ def main() -> None:
     if custom_titlebar:
         CAPABILITY_DIR.mkdir(parents=True, exist_ok=True)
         capability = {
-            "$schema": "../gen/schemas/desktop-schema.json",
+            "$schema": "../gen/schemas/remote-schema.json",
             "identifier": "main-capability",
             "description": "Window-control permissions for the requested website's custom title bar.",
             "windows": ["main"],
