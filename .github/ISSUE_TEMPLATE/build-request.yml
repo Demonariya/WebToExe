@@ -106,7 +106,7 @@ body:
     id: show_titlebar
     attributes:
       label: Native title bar and borders
-      description: Show the standard Windows title bar, border, and window controls.
+      description: Enabled keeps the native Windows frame. Disabled adds a custom bar with your app icon and name plus theme-matched minimize, maximize/restore, and close controls.
       options:
         - Enabled
         - Disabled
