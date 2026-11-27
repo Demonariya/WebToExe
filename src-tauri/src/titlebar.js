@@ -115,7 +115,6 @@
           && Math.abs(currentMinHeight - viewportHeight) <= 2) {
         element.dataset.w2eViewportMinHeight = "true";
         element.style.setProperty("min-height", "calc(100vh - " + BAR_HEIGHT + "px)", "important");
-        changed = true;
       }
 
       if (element.dataset.w2eViewportHeight || element.dataset.w2eViewportMinHeight) {
