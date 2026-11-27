@@ -77,18 +77,23 @@
   document.body.style.setProperty("min-height", "100vh", "important");
   document.body.style.setProperty("padding-top", (originalPaddingTop + BAR_HEIGHT) + "px", "important");
 
-  // Some websites explicitly force overflow-y: scroll, which displays a
-  // scrollbar even when the page has no overflow. Let the browser decide.
+  // Some websites force overflow-y/x: scroll, which displays a scrollbar
+  // even when content fits. Replace only that forced mode; preserve intentional
+  // hidden/clip overflow used by apps with their own internal scroll containers.
   for (const root of [documentRoot, document.body]) {
-    root.style.setProperty("overflow-y", "auto", "important");
-    root.style.setProperty("overflow-x", "auto", "important");
+    const computed = getComputedStyle(root);
+    if (computed.overflowY === "scroll") {
+      root.style.setProperty("overflow-y", "auto", "important");
+    }
+    if (computed.overflowX === "scroll") {
+      root.style.setProperty("overflow-x", "auto", "important");
+    }
   }
   documentRoot.style.setProperty("scroll-padding-top", BAR_HEIGHT + "px");
 
   // SPA shells commonly use height:100vh or min-height:100vh on their root.
   // Once the title bar reserves 36px, reduce only those viewport-sized roots
   // to the remaining viewport so maximized layouts do not overflow by 36px.
-  const fittedRoots = new Set();
   function fitViewportRoots() {
     const viewportHeight = window.innerHeight;
     if (!viewportHeight) return;
@@ -99,13 +104,11 @@
       const computed = getComputedStyle(element);
       const currentHeight = Number.parseFloat(computed.height);
       const currentMinHeight = Number.parseFloat(computed.minHeight);
-      let changed = false;
 
       if (!element.dataset.w2eViewportHeight && Number.isFinite(currentHeight)
           && Math.abs(currentHeight - viewportHeight) <= 2) {
         element.dataset.w2eViewportHeight = "true";
         element.style.setProperty("height", "calc(100vh - " + BAR_HEIGHT + "px)", "important");
-        changed = true;
       }
 
       if (!element.dataset.w2eViewportMinHeight && Number.isFinite(currentMinHeight)
@@ -117,9 +120,6 @@
 
       if (element.dataset.w2eViewportHeight || element.dataset.w2eViewportMinHeight) {
         element.style.setProperty("box-sizing", "border-box", "important");
-        fittedRoots.add(element);
-      } else if (changed) {
-        fittedRoots.add(element);
       }
     }
   }
