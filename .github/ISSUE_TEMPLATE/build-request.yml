@@ -103,17 +103,6 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: show_titlebar
-    attributes:
-      label: Native title bar and borders
-      description: Enabled keeps the native Windows frame. Disabled adds a custom bar with your app icon and name plus theme-matched minimize, maximize/restore, and close controls.
-      options:
-        - Enabled
-        - Disabled
-      default: 1
-    validations:
-      required: true
-  - type: dropdown
     id: start_maximized
     attributes:
       label: Start maximized
