@@ -386,7 +386,7 @@ def main() -> None:
     icon_base64 = base64.b64encode((ICON_DIR / "titlebar.png").read_bytes()).decode("ascii")
     options_path = ROOT / "src-tauri" / "src" / "build_options.rs"
     options_path.write_text(
-        "\\n".join(
+        "\n".join(
             [
                 "// Generated per build by scripts/prepare_build.py.",
                 f"pub const DISABLE_CONTEXT_MENU: bool = {str(disable_context_menu).lower()};",
@@ -425,7 +425,7 @@ def main() -> None:
         if allow_maximize:
             capability["permissions"].append("core:window:allow-toggle-maximize")
         CAPABILITY_PATH.write_text(
-            json.dumps(capability, ensure_ascii=False, indent=2) + "\\n",
+            json.dumps(capability, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
     else:
