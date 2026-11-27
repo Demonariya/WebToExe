@@ -71,9 +71,9 @@ Every build request can customize the generated Windows app:
 | Option | What it controls |
 |---|---|
 | Right-click context menu | Enable or suppress the website's context menu. |
-| Maximize button | Enable or disable the maximize/restore control in the native or custom title bar. |
+| Maximize button | Enable or disable the maximize/restore control in the custom title bar. |
 | Resize window | Allow or prevent resizing the app window. Turning this off also disables maximizing. |
-| Minimize button | Enable or disable the minimize control in the native or custom title bar. |
+| Minimize button | Enable or disable the minimize control in the custom title bar. |
 | Custom title bar | Always enabled. Replaces the native Windows frame with the uploaded app icon, app name, and minimize, maximize/restore, and close controls. |
 | Start maximized / fullscreen | Choose the app's initial window state. These modes are mutually exclusive. |
 | Always on top | Keep the app above other windows. |
