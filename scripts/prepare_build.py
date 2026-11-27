@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import base64
 import io
 import ipaddress
 import json
@@ -23,6 +24,8 @@ Image.MAX_IMAGE_PIXELS = 16_777_216
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "src-tauri" / "tauri.conf.json"
 ICON_DIR = ROOT / "src-tauri" / "icons"
+CAPABILITY_DIR = ROOT / "src-tauri" / "capabilities"
+CAPABILITY_PATH = CAPABILITY_DIR / "main.json"
 MAX_ICON_BYTES = 2 * 1024 * 1024
 # Exact hosts used by GitHub's attachment redirect chain. GitHub's
 # /user-attachments/assets endpoint redirects to its signed S3 asset bucket;
@@ -285,6 +288,9 @@ def write_icons(image: Image.Image) -> None:
     y = (512 - image.height) // 2
     canvas.alpha_composite(image, (x, y))
     canvas.save(ICON_DIR / "icon.png", format="PNG")
+    canvas.resize((64, 64), Image.Resampling.LANCZOS).save(
+        ICON_DIR / "titlebar.png", format="PNG"
+    )
     canvas.save(
         ICON_DIR / "icon.ico",
         format="ICO",
@@ -315,6 +321,7 @@ def main() -> None:
     prevent_screenshots = parse_toggle(body, "Prevent screenshots and screen capture", False)
     website_drag_drop = parse_toggle(body, "Website file drag-and-drop", True)
     app_theme = parse_theme(body)
+    custom_titlebar = not show_titlebar
 
     if start_maximized and start_fullscreen:
         fail("Start maximized and Start in fullscreen cannot both be enabled.")
@@ -372,11 +379,58 @@ def main() -> None:
     else:
         window["theme"] = app_theme
 
+    # Expose only window-control APIs for the requested website origin.
+    config["app"]["withGlobalTauri"] = custom_titlebar
+
+    app_name_base64 = base64.b64encode(app_name.encode("utf-8")).decode("ascii")
+    icon_base64 = base64.b64encode((ICON_DIR / "titlebar.png").read_bytes()).decode("ascii")
     options_path = ROOT / "src-tauri" / "src" / "build_options.rs"
     options_path.write_text(
-        f"pub const DISABLE_CONTEXT_MENU: bool = {str(disable_context_menu).lower()};\n",
+        "\\n".join(
+            [
+                "// Generated per build by scripts/prepare_build.py.",
+                f"pub const DISABLE_CONTEXT_MENU: bool = {str(disable_context_menu).lower()};",
+                f"pub const CUSTOM_TITLEBAR_ENABLED: bool = {str(custom_titlebar).lower()};",
+                f"pub const SHOW_MINIMIZE_BUTTON: bool = {str(allow_minimize).lower()};",
+                f"pub const SHOW_MAXIMIZE_BUTTON: bool = {str(allow_maximize).lower()};",
+                f'pub const APP_NAME_BASE64: &str = "{app_name_base64}";',
+                f'pub const APP_ICON_BASE64: &str = "{icon_base64}";',
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
+
+    if custom_titlebar:
+        CAPABILITY_DIR.mkdir(parents=True, exist_ok=True)
+        capability = {
+            "$schema": "../gen/schemas/desktop-schema.json",
+            "identifier": "main-capability",
+            "description": "Window-control permissions for the requested website's custom title bar.",
+            "windows": ["main"],
+            "remote": {
+                "urls": [
+                    f"https://{website_host}",
+                    f"https://*.{website_host}",
+                ]
+            },
+            "permissions": [
+                "core:window:default",
+                "core:window:allow-close",
+                "core:window:allow-start-dragging",
+            ],
+        }
+        if allow_minimize:
+            capability["permissions"].append("core:window:allow-minimize")
+        if allow_maximize:
+            capability["permissions"].append("core:window:allow-toggle-maximize")
+        CAPABILITY_PATH.write_text(
+            json.dumps(capability, ensure_ascii=False, indent=2) + "\\n",
+            encoding="utf-8",
+        )
+    else:
+        CAPABILITY_PATH.unlink(missing_ok=True)
+
 
     config.setdefault("bundle", {})
     config["bundle"]["active"] = True
@@ -399,6 +453,9 @@ def main() -> None:
     print(f"Website: {website_url}")
     print(f"Window: {width}x{height}")
     print(f"Custom icon: {'yes' if icon_url else 'no (generated default)'}")
+    print(f"Custom title bar: {'enabled' if custom_titlebar else 'disabled (native title bar)'}")
+    if custom_titlebar:
+        print(f"Custom title bar permissions restricted to: {website_host} and its subdomains")
     print(
         "Window options: "
         f"resizable={allow_resize}, maximizable={allow_maximize}, "
